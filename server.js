@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express();
 const bodyParser = require('body-parser');
+require('dotenv').config()
 app.use(bodyParser.urlencoded({extended: true}))
 app.set('view engine', 'ejs'); //server side rendering
 app.use('/css', express.static('css'));
@@ -9,7 +10,7 @@ const MongoClient = require('mongodb').MongoClient;
 
 
 var db;
-MongoClient.connect('mongodb+srv://Elly:2647@sandbox.mlfko8v.mongodb.net/?retryWrites=true&w=majority')
+MongoClient.connect(process.env.DB)
   .then(client => {
     // use client.db() to access your database if needed
 
