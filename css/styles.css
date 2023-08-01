@@ -3,6 +3,7 @@
 
 /* Screens */
 @import "/css/screens/write.css";
+@import "/css/screens/chat.css";
 
 
 body {

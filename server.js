@@ -46,7 +46,7 @@ app.get('/', function(req, res) {
   res.render('index.ejs')
 })
 
-app.get('/write', function(req, res) {
+app.get('/write', logined, function(req, res) {
   res.render('write.ejs')
 })
 
@@ -74,7 +74,7 @@ app.post('/add', function(req, res) {
   res.send(" post request")
 })
 
-app.get('/list', function(req, resp) {
+app.get('/list', logined, function(req, resp) {
 
   db.collection('post').find().toArray(function(err, res){
     console.log(res);
@@ -301,3 +301,89 @@ app.delete('/delete', function(req, resp) {
   });
 
 });
+
+let multer = require('multer');
+let path = require('path');
+
+const storage = multer.diskStorage({
+
+  destination : function(req, file, cb){
+    cb(null, './public/image')
+  },
+  filename : function(req, file, cb){
+    cb(null, file.originalname)
+  },
+})
+
+const upload = multer({ storage: storage,
+  fileFilter: function (req, file, callback) {
+          var ext = path.extname(file.originalname);
+          if(ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg') {
+              return callback(new Error('PNG, JPG만 업로드하세요'))
+          }
+          callback(null, true)
+      },
+      limits:{
+          fileSize: 1024 * 1024
+      } 
+});
+
+app.get('/upload', function(req, resp) {
+  resp.render('upload.ejs');
+});
+
+
+app.post('/upload', upload.single('profile'), function(req, resp) {
+  resp.send('uploaded')
+});
+
+app.get('/image/:imageName', function(req, resp) {
+  resp.sendFile(__dirname + '/public/image/' + req.params.imageName);
+});
+
+app.get('/chat', logined, function(req, resp) {
+
+  
+  db.collection('chatroom').find({ member: req.user._id}).toArray(function(err, res){
+    console.log(res);
+    resp.render('chat.ejs', { data: res });
+  });
+
+});
+
+const { ObjectId } = require('mongodb');
+
+app.post('/chatroom', logined, function(req, res) {
+
+  const chatRoomData = {
+    member: [ObjectId(req.body.writerID), req.user._id],
+    date: new Date(),
+    title: 'chat room'
+  }
+  
+  db.collection('chatroom').insertOne(chatRoomData, function(err, result) {
+    if (err) {
+      console.error(err);
+      return res.status(500).send();
+    }
+      console.log("chatroom saved")
+      return res.status(200).send();
+  });
+
+})
+
+app.post('/message', logined, function(req, resq) {
+  const data = {
+    parent: ObjectId(req.body.parent),
+    content: req.body.content,
+    userid: req.user._id,
+    date: new Date(),
+  }
+
+  db.collection('message').insertOne(data).then((res) => {
+    console.log(data);
+    resq.send(res);
+  })
+
+})
+

@@ -30,12 +30,33 @@
         <h4><%= posts[i].title %></h4>
         <p><%= posts[i].date %></p>
         <button class="btn btn-danger delete" data-id="<%= posts[i]._id %>">delete</button>
+        <button type="button" class="btn btn-info chat" data-id="<%= posts[i].writer %>">chat room</button>
         </li>
       <% } %>
     </ul>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  
+  <script>
+    $('.chat').click(function(e) {
+      const writerID = e.target.dataset.id;
+      const clicked = $(this);
+
+      $.ajax({
+        method: 'POST',
+        url: '/chatroom',
+        data: { 
+          writerID: writerID
+        }
+      }).done((res) => {
+        console.log("chat room ");
+      }).fail((xhr, code, err) => {
+        console.log(err);
+      });
+
+    })
+  </script>
 
   <script>
     $('#search').click(function() {
