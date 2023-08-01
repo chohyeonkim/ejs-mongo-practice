@@ -19,6 +19,10 @@
 
   <div class = "container">
     <h4 class="ml-4 my-3 text-center"> TO DO LIST</h4>
+    <div class="container input-group mb-2">
+      <input class="form-control" id="search-input">
+      <button class="input-group-append btn btn-danger" id="search">Search</button>
+    </div>
     <ul class="list-group">
       <% for (var i=0; i < posts.length; i++){ %>
         <li class="list-group-item">
@@ -32,6 +36,21 @@
   </div>
 
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+  <script>
+    $('#search').click(function() {
+      const input = $('#search-input').val()
+      console.log(input);
+      window.location.replace('/search?value=' + input)
+    });
+
+    // var data = { name: 'value', value2: 'value2'} query string 쉽게 만들기
+    // $.param(data)
+
+    // $(폼태그).serialize()
+    
+
+  </script>
 
   <script>
 

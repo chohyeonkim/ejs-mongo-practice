@@ -20,16 +20,15 @@
     <h4 class="container mt-4"><strong>Write Page</strong></h4>
 
     <div class="container mt-3">
-      <form action="/edit?_method=PUT" method="POST">
+      <form action="/login" method="POST">
         <div class="form-group">
-          <label>Today's task</label>
-          <input value="<%= post._id %>" name="id" style="display : none">
-          <input value= '<%= post.title %>' type="text" class="form-control" name="title">
+          <label>ID</label>
+          <input type="text" class="form-control" name="id">
           <!-- name  -->
         </div>
         <div class="form-group">
-          <label>Date</label>
-          <input value= '<%= post.date %>' type="text" class="form-control" name="date">
+          <label>passward</label>
+          <input type="passward" class="form-control" name="pw">
         </div>
         <button type="submit" class="btn btn-outline-secondary">Submit</button>
       </form>
