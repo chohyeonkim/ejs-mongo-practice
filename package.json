@@ -19,6 +19,8 @@
     "mongodb": "^3.6.4",
     "multer": "^1.4.5-lts.1",
     "passport": "^0.6.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "socker.io": "^0.0.0-alpha-beta",
+    "socket.io": "^4.7.2"
   }
 }

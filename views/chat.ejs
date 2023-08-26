@@ -35,10 +35,6 @@
             </li>
             <% } %>
         
-              <li class="list-group-item">
-                <h6>chatroom 1</h6>
-                <h6 class="text-small">채팅방아이디</h6>
-              </li>
         
         </ul>
       </div>
@@ -46,9 +42,7 @@
       <div class="col-9 p-0">
         <div class="chat-room">
           <ul class="list-group chat-content">
-            <li><span class="chat-box">chat1 details</span></li>
-            <li><span class="chat-box">chat1 details</span></li>
-            <li><span class="chat-box mine">chat1 details</span></li>
+            <li><span class="chat-box">details above.... </span></li>
           </ul>
           <div class="input-group">
             <input class="form-control" id="chat-input">
@@ -64,21 +58,41 @@
 
   <script>
 
-    $('.list-group-item').click(function(e) {
-      const clickedRoom = e.currentTarget.dataset.id;
+    let eventSource;
+    let clickedRoom
 
-      $('#send').click(function () {
+    //JQuery
 
-        const content = $('#chat-input').val();
+    $('.list-group-item').click(function() {
+      clickedRoom = this.dataset.id;
+      $('.chat-content').html(''); // clear html 
 
-        const data = {
-          parent: clickedRoom,
-          content: content,
-        }
+      if (eventSource != undefined) {
+        eventSource.close()
+      }
+    
+      eventSource = new EventSource('/message/' + clickedRoom); // data reponse from server
+      eventSource.addEventListener('test', function(e) { //event listener
+        console.log(e.data);
 
-        $.post('/message', data).then(() => {
-          console.log(data)
+        const msg = JSON.parse(e.data); // server messages
+        msg.forEach((a) => {
+          $('.chat-content').append(`<li><span class="chat-box">${a.content}</span></li>`)
         })
+      })
+    })
+
+    $('#send').click(function () {
+
+      const content = $('#chat-input').val();
+
+      const data = {
+        parent: clickedRoom,
+        content: content,
+      }
+
+      $.post('/message', data).then(() => {
+        console.log(data)
       })
     })
 

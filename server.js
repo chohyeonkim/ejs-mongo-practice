@@ -6,6 +6,11 @@ const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 
+// Socket.io
+const http = require('http').createServer(app);
+const {Server} = require('socket.io');
+const io = new Server(http);
+
 require('dotenv').config()
 app.use(bodyParser.urlencoded({extended: true}))
 app.set('view engine', 'ejs'); //server side rendering
@@ -28,7 +33,7 @@ MongoClient.connect(process.env.DB)
 
     db = client.db('todoapp');
 
-    app.listen('8080', function(){
+    http.listen('8080', function(){ // web Socket.io
       console.log('listening on 8080')
     });
   })
@@ -374,7 +379,7 @@ app.post('/chatroom', logined, function(req, res) {
 
 app.post('/message', logined, function(req, resq) {
   const data = {
-    parent: ObjectId(req.body.parent),
+    parent: req.body.parent,
     content: req.body.content,
     userid: req.user._id,
     date: new Date(),
@@ -385,5 +390,65 @@ app.post('/message', logined, function(req, resq) {
     resq.send(res);
   })
 
+})
+
+app.get('/message/:parentid', logined, function(req, resp) {
+
+  resp.writeHead(200, { // real time connection with user
+    "Connection": "keep-alive",
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+  })
+
+  db.collection('message').find({ parent: req.params.parentid }).toArray()
+    .then((res) => {
+      console.log("Get chat room message ")
+      resp.write('event: test\n'); // data name
+      resp.write('data: '+ JSON.stringify(res) + '\n\n'); // data
+    })
+
+  // MongoDB Change Stream DB변동시 -> notify server -> user
+
+  const pipleline = [
+    { $match: { 'fullDocument.parent' : req.params.parentid } } //fullDocument... query
+  ];
+  const collection = db.collection('message');
+  const changeStream = collection.watch(pipleline); // message collection 실시간 감시
+  changeStream.on('change', (result) => {
+    // result.fullDocument 추가된 document만 return
+
+    console.log("ChangeStream start")
+    resp.write('event: test\n'); //event명 작명 필요
+    resp.write('data: '+ JSON.stringify([result.fullDocument]) + '\n\n'); // [] 형식 통일 (Array)
+  })
+
+  changeStream.on('error', (error) => {
+    console.error("Change stream error:", error);
+  });
+
+});
+
+// Web socket
+
+app.get('/socket', function(req, resp) {
+  resp.render('socket.ejs');
+});
+
+io.on('connection', function(socket) { // user's info
+
+  socket.on('joinRoom', function(data) {
+    console.log('joined room1')
+    socket.join('room1'); // join room1 chat room , socket 으로 get/post 대체 가능
+  });
+
+  socket.on('user-send', function(data) {
+      console.log(data);
+      io.emit('broadcast', data)
+  })
+
+  socket.on('room1-send', function(data) {
+      console.log(data);
+      io.to('room1').emit('broadcast', data)
+  }) // send msg to only chat room 1 participants
 })
 
